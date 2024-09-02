@@ -68,6 +68,7 @@ if __name__ == '__main__':
     print('making copy of data')
 
     ## square amplitude
+    # omg this is where the magic is happening, this is why the max amp is so big its squared...
     for n, tr in enumerate(waveforms):
         waveforms[n].data = tr.data**2
 
@@ -101,6 +102,7 @@ if __name__ == '__main__':
     for k in peak_times.keys():
         print('hydrophone', k, 'number of events:', len(peak_times[k]))
     ## store initial picks in dataframe
+
     
     df_picks = pd.DataFrame()
     index_start = 0
@@ -120,7 +122,10 @@ if __name__ == '__main__':
     print('number of initial events detected:', df_picks.shape)
     print('first event:', dates.num2date(df_picks.init_arrival_time.min()))
     print('last event:', dates.num2date(df_picks.init_arrival_time.max()))
+
     # return to raw data to make closer picks
+    # lets hope this works
+    waveforms = load.import_corrected_data_for_single_day(paths=paths)
     
     ## create function for multiprocessing
     def do(id=id):
@@ -131,6 +136,14 @@ if __name__ == '__main__':
                   , waveforms=waveforms.copy()
                   , velocity_model=1750
                  )
+
+        # paths = useful_variables.make_hydrophone_data_paths(borehole='a', year=2019, julian_day=211)
+        # paths = useful_variables.make_hydrophone_data_paths(borehole='a', year=2019, julian_day=day_number)
+        # # loads data for all hydrophones
+        # # converts to pascals
+        # # flips the sign on hydrophone 3 if there it is borehole B due to wiring problem
+        # waveforms = load.import_corrected_data_for_single_day(paths=paths)
+        # max_amp = 
         
         event = {
             'id':id
@@ -154,11 +167,14 @@ if __name__ == '__main__':
             ,'origin_time':obspy.UTCDateTime(dates.num2date(e.hphone1_time)) - (e.relative_depth / e.velocity_model)
             ,'init_arrival_time':df_picks_row.init_arrival_time
         }
+
         return event
 
     print('calculating precision peaks')
     rows = []
     idx = np.arange(0, df_picks.shape[0], 1)
+
+
 
     for id in idx:
         print('calculating event', id)
