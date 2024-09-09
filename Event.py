@@ -35,13 +35,27 @@ class Event:
         
         self.hphone1_time = self.aic_t[self.first_hydrophone_id]
         self.hphone2_time = self.aic_t[self.second_hydrophone_id]
-        
+
         self.get_depth()
+
+        ########## depthrecalc
+        if self.depth > 400 or self.depth < 150:
+            print(f'depth={self.depth} reducing time window and trying again...')
+            self.stream = self.stream.trim(starttime=self.starttime-0.1, endtime=self.starttime+0.4)
+            self.maxes, self.aic_t, self.aics = self.aic_pick()
+        
+            self._get_first_second_hydrophones()
+            
+            self.hphone1_time = self.aic_t[self.first_hydrophone_id]
+            self.hphone2_time = self.aic_t[self.second_hydrophone_id]
+    
+            self.get_depth()
+           
         
         # RADIUS CALCULATION
-        self.get_pwaveforms()
-        self.get_aicp()
-        self.calc_radius()
+        # self.get_pwaveforms()
+        # self.get_aicp()
+        # self.calc_radius()
         
         
 
@@ -69,14 +83,14 @@ class Event:
             trimmed.taper(type='hann', max_percentage=0.5)
         return trimmed
     
-    def get_pwaveforms(self):
-        """
-        Creates class variables for p arrrival estimation
-        """
-        window_start = self.starttime - 0.2
-        window_end = self.starttime + 0.3
-        self.p_waveforms = self.data.copy().trim(starttime=window_start, endtime=window_end)
-        self.p_waveforms.filter(type='highpass', freq=200, zerophase=False, corners=1)
+    # def get_pwaveforms(self):
+    #     """
+    #     Creates class variables for p arrrival estimation
+    #     """
+    #     window_start = self.starttime - 0.2
+    #     window_end = self.starttime + 0.3
+    #     self.p_waveforms = self.data.copy().trim(starttime=window_start, endtime=window_end)
+    #     self.p_waveforms.filter(type='highpass', freq=200, zerophase=False, corners=1)
         
 
     def aic_pick(self):
@@ -111,14 +125,14 @@ class Event:
         # return aic_t, aics
         return maxes, aic_t, aics
     
-    def get_aicp(self):
-        """
-        Creates variables to calculate aic for parrival time. Also calculates parrival time
-        """
-        self.aic_p = trigger.aic_simple(self.p_waveforms[self.first_hydrophone_id])
-        t = self.p_waveforms[self.first_hydrophone_id].times('matplotlib')
-        self.parrival = t[np.argmin(self.aic_p)]
-        self.parrival = dates.num2date(self.parrival)
+    # def get_aicp(self):
+    #     """
+    #     Creates variables to calculate aic for parrival time. Also calculates parrival time
+    #     """
+    #     self.aic_p = trigger.aic_simple(self.p_waveforms[self.first_hydrophone_id])
+    #     t = self.p_waveforms[self.first_hydrophone_id].times('matplotlib')
+    #     self.parrival = t[np.argmin(self.aic_p)]
+    #     self.parrival = dates.num2date(self.parrival)
 
     def _get_first_second_hydrophones(self):
         # NOTE: THIS ONLY WORKS IF YOU ARE GENERATING A CATALOG, FAILS OTHERWISE
@@ -135,8 +149,25 @@ class Event:
         t_B = dates.num2date(self.hphone2_time)
         
         dt = (t_A - t_B).total_seconds()
+
+        ############ ifelse0.04
+        if dt > 0.04:
+            dt = 0.04
+        elif dt < -0.04:
+            dt = -0.04
+        else:
+            pass
+            
+        self.dt = dt
         
         sign = self.first_hydrophone_id - self.second_hydrophone_id
+
+        ############ iesign
+        # if np.abs(dt) > 0.04:
+        #     print(f'fixing sign dt to {0.04 * sign}')
+        #     dt = 0.04 * sign
+
+        self.dt = dt
         
         dz_phone = np.min([self.first_hydrophone_id, self.second_hydrophone_id])
         dz_phone_label = 'h' + str(dz_phone+1)
@@ -152,15 +183,15 @@ class Event:
         self.depth = z
         
 
-    def calc_radius(self):
-        """
-        calculates radial distance event is from borehole in meters
-        """
-        vrock = 4500 # m/s 5500 default
-        vtm = self.velocity_model
-        dz = self.depth - hydrophone_metadata['h'+str(self.first_hydrophone_id+1)]['depth']
+    # def calc_radius(self):
+    #     """
+    #     calculates radial distance event is from borehole in meters
+    #     """
+    #     vrock = 4500 # m/s 5500 default
+    #     vtm = self.velocity_model
+    #     dz = self.depth - hydrophone_metadata['h'+str(self.first_hydrophone_id+1)]['depth']
         
-        mode_t = dates.num2date(self.hphone1_time)
-        dt = (mode_t - self.parrival).total_seconds()
+    #     mode_t = dates.num2date(self.hphone1_time)
+    #     dt = (mode_t - self.parrival).total_seconds()
         
-        self.radius =  np.sqrt(vrock**2 * dt**2 - dz**2)
+    #     self.radius =  np.sqrt(vrock**2 * dt**2 - dz**2)
