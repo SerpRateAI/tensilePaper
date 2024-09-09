@@ -149,7 +149,7 @@ if __name__ == '__main__':
             'id':id
             ,'depth':e.depth
             ,'relative_depth':e.relative_depth
-            ,'radius':e.radius
+            # ,'radius':e.radius
             ,'aic_t':e.aic_t
             # ,'aics':e.aics
             ,'aics':list(e.aics[0])
@@ -159,11 +159,12 @@ if __name__ == '__main__':
             ,'arrival_time':e.aic_t[e.first_hydrophone_id]
             ,'first_arrival':dates.num2date(e.hphone1_time)
             ,'second_arrival':dates.num2date(e.hphone2_time)
-            ,'dt':(dates.num2date(e.hphone1_time) - dates.num2date(e.hphone2_time)).total_seconds()
-            ,'parrival':e.parrival
+            # ,'dt':(dates.num2date(e.hphone1_time) - dates.num2date(e.hphone2_time)).total_seconds()
+            ,'dt':e.dt
+            # ,'parrival':e.parrival
             ,'max_amp':e.stream[e.first_hydrophone_id].data.max()
             ,'cum_amp':abs(e.stream[e.first_hydrophone_id].data).cumsum()[-1]
-            # this calculates the true origin time and not the arrival time on the hydrophoneg
+            # this calculates the true origin time and not the arrival time on the hydrophone
             ,'origin_time':obspy.UTCDateTime(dates.num2date(e.hphone1_time)) - (e.relative_depth / e.velocity_model)
             ,'init_arrival_time':df_picks_row.init_arrival_time
         }
@@ -173,8 +174,6 @@ if __name__ == '__main__':
     print('calculating precision peaks')
     rows = []
     idx = np.arange(0, df_picks.shape[0], 1)
-
-
 
     for id in idx:
         print('calculating event', id)
