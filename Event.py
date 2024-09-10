@@ -138,9 +138,14 @@ class Event:
         # NOTE: THIS ONLY WORKS IF YOU ARE GENERATING A CATALOG, FAILS OTHERWISE
         # we skip the first two hydrophones because they are always useless and often can have AICs that come in the very beginning
         sorted_aic = np.argsort(self.aic_t[2:])
+
+        # print(sorted_aic)
         # we add 2 because np.argsort returns the index of the sorted array and because we skip the first two hydrophones we chnage the indices
         self.first_hydrophone_id = sorted_aic[0] + 2
         self.second_hydrophone_id = sorted_aic[1] + 2
+
+        # print('first hphone:', self.first_hydrophone_id)
+        # print('second hphone:', self.second_hydrophone_id)
 
             
     # def get_depth(self, hA, hB):

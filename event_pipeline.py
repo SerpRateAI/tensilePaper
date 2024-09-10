@@ -135,8 +135,18 @@ if __name__ == '__main__':
                   , init_first_hphone=df_picks_row.arrival_hydrophone
                   , waveforms=waveforms.copy()
                   , velocity_model=1750
+                  , hanning=True
                  )
 
+        if np.abs(e.first_hydrophone_id - e.second_hydrophone_id) != 1:
+            print(f'recalculating event {id} without hanning window...')
+            e = Event(id=id
+                  , starttime=df_picks_row.init_arrival_time
+                  , init_first_hphone=df_picks_row.arrival_hydrophone
+                  , waveforms=waveforms.copy()
+                  , velocity_model=1750
+                  , hanning=False
+                 )
         # paths = useful_variables.make_hydrophone_data_paths(borehole='a', year=2019, julian_day=211)
         # paths = useful_variables.make_hydrophone_data_paths(borehole='a', year=2019, julian_day=day_number)
         # # loads data for all hydrophones
