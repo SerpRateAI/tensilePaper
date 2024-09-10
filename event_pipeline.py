@@ -147,6 +147,14 @@ if __name__ == '__main__':
                   , velocity_model=1750
                   , hanning=False
                  )
+
+        if np.abs(e.first_hydrophone_id - e.second_hydrophone_id) != 1:
+            print(f'resetting hydrophone {id}...')
+            e.first_hydrophone_id = df_picks_row.arrival_hydrophone
+            if e.first_hydrophone_id > 2:
+                e.second_hydrophone_id = np.random.choice([1, -1]) + df_picks_row.arrival_hydrophone
+            else:
+                e.second_hydrophone_id = 3
         # paths = useful_variables.make_hydrophone_data_paths(borehole='a', year=2019, julian_day=211)
         # paths = useful_variables.make_hydrophone_data_paths(borehole='a', year=2019, julian_day=day_number)
         # # loads data for all hydrophones
