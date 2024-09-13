@@ -9,5 +9,5 @@ peakloc=$2
 echo $daynumber
 echo $peakloc
 
-# python peakfinder.py "$daynumber" "$peakloc"
+python peakfinder.py "$daynumber" "$peakloc"
 python catalogcreator.py "$daynumber"

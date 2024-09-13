@@ -12,10 +12,6 @@ from Event import Event
 
 hydrophone_metadata = config.hydrophone_metadata['141']
 
-
-
-        
-
 if __name__ == '__main__':
     import sys
     
