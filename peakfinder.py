@@ -18,6 +18,7 @@ if __name__ == '__main__':
     args = sys.argv
     day_number = args[1]
     peaks_loc = args[2]
+    peakdistance = float(args[3])
 
     swarm_starttime = config.swarm_starttime[day_number]
     swarm_endtime = config.swarm_endtime[day_number]
@@ -69,7 +70,9 @@ if __name__ == '__main__':
              )
 
         # apply peak finding algorithm
-        idx, props = signal.find_peaks(tr_trim.data, height=0.25, distance=250)
+        # idx, props = signal.find_peaks(tr_trim.data, height=0.25, distance=250)
+        # idx, props = signal.find_peaks(tr_trim.data, height=0.25, distance=125)
+        idx, props = signal.find_peaks(tr_trim.data, height=0.25, distance=peakdistance)
         print('finding peaks in squared data')
 
         # record initial event times for each peak detected for each hydrophone

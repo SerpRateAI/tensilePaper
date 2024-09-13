@@ -13,6 +13,7 @@ from tqdm import tqdm
 
 args = sys.argv
 day_number = args[1]
+peaksloc = args[1]
 
 swarm_starttime = config.swarm_starttime[day_number]
 swarm_endtime = config.swarm_endtime[day_number]
@@ -28,7 +29,8 @@ hydrophone_metadata = config.hydrophone_metadata['141']
 velocity_model = 1750
 
 def load_peaks_dataframe():
-    df = pd.read_csv(f'peaks{day_number}.csv')
+    # df = pd.read_csv(f'peaks{day_number}.csv')
+    df = pd.read_csv(peaksloc)
     df['datetime'] = df.init_arrival_time.apply(dates.num2date)
     df['obs_dt'] = df.datetime.apply(obspy.UTCDateTime)
     df['phone_number'] = df.arrival_hydrophone.apply(lambda p: int(p[1]))
@@ -249,14 +251,14 @@ if __name__ == '__main__':
     args = sys.argv
     day_number = args[1]
 
-    swarm_starttime = config.swarm_starttime[day_number]
-    swarm_endtime = config.swarm_endtime[day_number]
+    # swarm_starttime = config.swarm_starttime[day_number]
+    # swarm_endtime = config.swarm_endtime[day_number]
 
-    hydrophone_metadata = config.hydrophone_metadata[day_number]
+    # hydrophone_metadata = config.hydrophone_metadata[day_number]
 
-    paths = useful_variables.make_hydrophone_data_paths(borehole='a', year=2019, julian_day=day_number)
+    # paths = useful_variables.make_hydrophone_data_paths(borehole='a', year=2019, julian_day=day_number)
     
-    waveforms = load.import_corrected_data_for_single_day(paths=paths)
+    # waveforms = load.import_corrected_data_for_single_day(paths=paths)
     
     # remove first two hydrophone data since its bad
     # waveforms = waveforms[2:]
