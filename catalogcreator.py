@@ -30,6 +30,12 @@ def load_peaks_dataframe():
     df['datetime'] = df.init_arrival_time.apply(dates.num2date)
     df['obs_dt'] = df.datetime.apply(obspy.UTCDateTime)
     df['phone_number'] = df.arrival_hydrophone.apply(lambda p: int(p[1]))
+    # we return the phone index to the array index which starts from 0
+    # this returns the phone index back to where it was generated from
+    # the minimum phone that it can be detected on is h3 so we return it
+    # to 0 by taking 3
+    # df['phone_index'] = df.phone_number - 1
+    df['phone_index'] = df.phone_number - 3
     return df
 
 def get_event_waveforms(wf, starttime):
@@ -87,7 +93,6 @@ def calc_aics(wf):
 
 def make_event(id):
     e = peaks_df.loc[id]
-    # print(e.phone_number)
 
     # initial picking method for hydrophones that calculates the AIC
     # then uses the finite difference of the AIC to determine the
@@ -98,20 +103,20 @@ def make_event(id):
     hphone_arrival_order = np.argsort(aict)
     picking_method = 0
     
-    # if the order doesn't match the original starting hydrophone
-    # retry now with a hanning window put on the data set
-    print('this is the hphone arrival order:', hphone_arrival_order)
-    print('this is the e.phone_number:', e.phone_number)
-    if hphone_arrival_order[0] + 2 != e.phone_number:
+
+    if hphone_arrival_order[0] + 2 != e.phone_index:
+        # if the order doesn't match the original starting hydrophone
+        # retry now with a hanning window put on the data set        
         wf_h = wf.copy().taper(type='hann', max_percentage=0.5)
         mxs, aict, aics = calc_aics(wf_h)
         hphone_arrival_order = np.argsort(aict)
         picking_method = 1
 
-    # if the order doesn't match after the hanning window is applied
-    # retry now, without the hanning window, but a smaller event
-    # window
-    if hphone_arrival_order[0] + 2 != e.phone_number:
+
+    if hphone_arrival_order[0] + 2 != e.phone_index:
+        # if the order doesn't match after the hanning window is applied
+        # retry now, without the hanning window, but a smaller event
+        # window
         starttime = e.obs_dt - 0.1
         endtime = e.obs_dt + 0.4
         wf_t = wf.copy().trim(starttime=starttime, endtime=endtime)
@@ -119,20 +124,25 @@ def make_event(id):
         hphone_arrival_order = np.argsort(aict)
         picking_method = 2
 
-    # if the order doesn't match after trimming the event window
-    # set the arrival order to match the initial arrival pick
-    # and randomly choose the phone above or below to calculate
-    # the depth
-    if hphone_arrival_order[0] + 2 != e.phone_number:
-        phones = [0, 1, 2, 3]
-        phones.pop(e.phone_number)
-        second_phone = np.random.choice([e.phone_number + 1, e.phone_number - 1])
-        phones.pop(second_phone)
-        hphone_arrival_order = [e.phone_number
-                                , np.random.choice([e.phone_number + 1, e.phone_number -1])
-                                , phones[0]
-                                , phones[1]
+    
+    if hphone_arrival_order[0] + 2 != e.phone_index:
+        # if the order doesn't match after trimming the event window
+        # set the arrival order to match the initial arrival pick
+        # and randomly choose the phone above or below to calculate
+        # the depth
+        phones = np.array([0, 1, 2, 3])
+
+        first_hydrophone = e.phone_index
+        second_hydrophone = e.phone_index + 1 if e.phone_index < 3 else e.phone_index - 1
+        remaining_hphones = list(set(phones).difference([first_hydrophone, second_hydrophone]))
+        
+        hphone_arrival_order = [first_hydrophone
+                                ,second_hydrophone
+                                ,remaining_hphones[0] # third
+                                ,remaining_hphones[1] # fourth
                                ]
+
+        mxs, aict, aics = calc_aics(wf)
         aict = [aict[i] for i in hphone_arrival_order]
         picking_method = 3
 
@@ -199,6 +209,7 @@ if __name__ == '__main__':
     paths = useful_variables.make_hydrophone_data_paths(borehole='a', year=2019, julian_day=day_number)
     
     waveforms = load.import_corrected_data_for_single_day(paths=paths)
+    
     # remove first two hydrophone data since its bad
     waveforms = waveforms[2:]
 
