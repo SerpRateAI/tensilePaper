@@ -1,5 +1,4 @@
-#!/bin/bash
-
+#!/bin
 # source /fp/homes01/u01/ec-benm/SerpRateAI/MicroquakesEnv/bin/activate
 # source /fp/homes01/u01/ec-johnmai/.peakconda/envs/spec/bin
 

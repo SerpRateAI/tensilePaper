@@ -56,10 +56,10 @@ def get_event_waveforms(wf, starttime):
     data : obspy.Stream
         trimmed waveforms for 1 second event window
     """
-    starttime = starttime - 0.2
+    st = starttime - 0.2
     # endtime = starttime + 0.5
-    endtime = starttime + 0.2
-    trimmed = wf.copy().trim(starttime=starttime, endtime=endtime)
+    et = starttime + 0.2
+    trimmed = wf.copy().trim(starttime=st, endtime=et)
     return trimmed
 
 def make_event(id):
@@ -69,8 +69,10 @@ def make_event(id):
     wf = get_event_waveforms(wf=waveforms, starttime=e.obs_dt)
     
     tmaxes = []
-    for tr in wf:
+    for n, tr in enumerate(wf):
+        np.savetxt(f'wfs/{id}_h{n}.txt', X=tr.data)
         aic = trigger.aic_simple(tr.data)
+        np.savetxt(f'aics/{id}_h{n}.txt', X=aic)
         aicdiff = np.diff(aic)
         diffmax = np.argmax(aicdiff)+1
         tmax = tr.times()[diffmax]
@@ -114,6 +116,8 @@ if __name__=='__main__':
     events = []
     for id in tqdm(peaks_df.index, desc='calc everything'):
         e = make_event(id=id)
+        e['datetime'] = peaks_df.datetime.loc[id]
+        # e['origin_time'] = e.obs_dt - (e.relative_depth / velocity_model) 
         events.append(e)
 
     df = pd.DataFrame(events)
