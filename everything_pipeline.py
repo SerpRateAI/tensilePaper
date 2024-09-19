@@ -69,14 +69,23 @@ def make_event(id):
     wf = get_event_waveforms(wf=waveforms, starttime=e.obs_dt)
     
     tmaxes = []
+    datetimes = []
     for n, tr in enumerate(wf):
+        
         np.savetxt(f'wfs/{id}_h{n}.txt', X=tr.data)
+        
         aic = trigger.aic_simple(tr.data)
         np.savetxt(f'aics/{id}_h{n}.txt', X=aic)
+        
         aicdiff = np.diff(aic)
+        
         diffmax = np.argmax(aicdiff)+1
+        
         tmax = tr.times()[diffmax]
         tmaxes.append(tmax)
+        
+        datetime = tr.times('matplotlib')[diffmax]
+        datetimes.append(datetime)
 
     depths = []
     dts = []
@@ -105,7 +114,9 @@ def make_event(id):
         event[key+'_dt'] = dts[n]
         event[key+'_depth'] = depths[n]
         event['id'] = id
-
+       
+    for n, h in enumerate(hydrophones):
+        event[h + '_datetime'] = datetimes[n]
     # print(event.keys())
     return event
             
