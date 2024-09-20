@@ -67,6 +67,7 @@ def make_event(id):
     e = peaks_df.loc[id]
 
     wf = get_event_waveforms(wf=waveforms, starttime=e.obs_dt)
+    # max_amp = wf[peaks_df.loc[id].phone_index].data.max()
     
     tmaxes = []
     datetimes = []
@@ -117,6 +118,8 @@ def make_event(id):
        
     for n, h in enumerate(hydrophones):
         event[h + '_datetime'] = datetimes[n]
+        event[h+'_maxamp'] = wf[n].data.max()
+    # event['max_amp'] = max_amp
     # print(event.keys())
     return event
             
