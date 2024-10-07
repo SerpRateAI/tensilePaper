@@ -12,4 +12,8 @@ echo $peakdistance
 
 python peakfinder.py "$daynumber" "$peakloc" "$peakdistance"
 # python catalogcreator.py "$daynumber"
-python everything_pipeline.py "$daynumber" "$peakloc"
+# python everything_pipeline.py "$daynumber" "$peakloc"
+python logic_pipeline.py "$daynumber" "$peakloc"
+
+current_date_time=$(date)
+echo "Completion date and time: $current_date_time"
