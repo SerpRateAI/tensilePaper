@@ -62,21 +62,26 @@ def get_event_waveforms(wf, starttime):
     return trimmed
 
 def calc_depth(t1, t2, h1, h2):
+    # helper dict for indexing related to hydrophones
     hydrophones = {'h3':0, 'h4':1, 'h5':2, 'h6':3}
     n1 = hydrophones[h1]
     n2 = hydrophones[h2]
-    
+
+    # time difference between the two arrivals
     dt = t1 - t2
-    
-    # sign = (n1 - n2)/np.abs(n1 - n2)
-    # sign = (n2 - n1)
+
+    # sign calculation
     sign = (n1 - n2)
+    # the depths get mirrored so this fixes that issue
     if n1 - n2 > 0:
         h1 = h2
-    # relative_depth = 35 - 0.5 * dt * velocity_model * sign
-    # relative_depth = 35 - 0.5 * dt * velocity_model * sign
+    # relative depth calculation
     relative_depth = 35 - 0.5 * dt * velocity_model * sign
+
+    # look up the depth of the hydrophone
     hydrophone_depth = hydrophone_metadata[h1]['depth']
+
+    # overeall depth calculation
     depth = hydrophone_depth + relative_depth
     return relative_depth, depth
 
